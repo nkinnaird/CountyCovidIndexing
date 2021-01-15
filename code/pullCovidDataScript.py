@@ -11,9 +11,6 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
 
 
-
-
-
 def isfloat(value_string_reduced):
   try:
     float(value_string_reduced)
@@ -74,7 +71,7 @@ def cleanCountyInput(county_string):
 def check_file_written(checkfile, stateFileName):
     checkfile.seek(0)
     for line in checkfile:
-        if stateFileName in line:
+        if str(stateFileName) in line:
             return True
     return False
 
@@ -104,10 +101,10 @@ def main():
 	list_of_dicts = []
 	# list_of_missed_rows = []
 
-	i = 0
+	# i = 0
 	for state_frame in state_dataframes:
-	    i+=1
-	    if(i > 10): break
+	    # i+=1
+	    # if(i > 10): break
 	        
 	    reduced_state_name = state_frame.index[0][1].replace(" ","")
 	    state_file = Path(f"../Data/Covid/{reduced_state_name}.pkl")
@@ -122,15 +119,15 @@ def main():
 	    # else scrape the data
 	              
 	    print(f"Creating file: {state_file}")
-	    check_file.write("\n")
 	    check_file.write(str(state_file))
+	    check_file.write("\n")
 	    check_file.close()
 	    
 	    
-	    j = 0
+	    # j = 0
 	    for index, row in state_frame.iterrows():
-	        j+=1
-	        if(j>1): break
+	        # j+=1
+	        # if(j>1): break
 	            
 	        state_input = index[1]
 	        county_input = cleanCountyInput(index[0])
