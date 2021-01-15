@@ -66,7 +66,7 @@ def grabCovidData(soup):
     return county_dict
 
 def cleanCountyInput(county_string):
-    return county_string.replace("County",'').replace("Parish",'').replace("City and Borough",'').replace("Borough",'').replace("Census Area",'').rstrip()
+    return county_string.replace("County",'').replace("Parish",'').replace("City and Borough",'').replace("Borough",'').replace("Census Area",'').replace("Municipality",'').rstrip()
 
 def check_file_written(checkfile, stateFileName):
     checkfile.seek(0)
@@ -98,13 +98,7 @@ def main():
 
 	time.sleep(10)
 
-	list_of_dicts = []
-	# list_of_missed_rows = []
-
-	# i = 0
 	for state_frame in state_dataframes:
-	    # i+=1
-	    # if(i > 10): break
 	        
 	    reduced_state_name = state_frame.index[0][1].replace(" ","")
 	    state_file = Path(f"../Data/Covid/{reduced_state_name}.pkl")
@@ -123,11 +117,9 @@ def main():
 	    check_file.write("\n")
 	    check_file.close()
 	    
-	    
-	    # j = 0
+	    list_of_dicts = []
+
 	    for index, row in state_frame.iterrows():
-	        # j+=1
-	        # if(j>1): break
 	            
 	        state_input = index[1]
 	        county_input = cleanCountyInput(index[0])
