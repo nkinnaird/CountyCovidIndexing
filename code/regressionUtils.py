@@ -11,7 +11,7 @@ import sklearn.preprocessing as preprocessing
 import plotUtils as pu
 
 
-def doSimpleLinearRegression(X, y):
+def doSimpleLinearRegression(X, y, input_features):
     
     # first do cross validation to make sure the model is consistent
     
@@ -40,15 +40,15 @@ def doSimpleLinearRegression(X, y):
     residuals = pred_y - y
     
     pu.makeMainResidualPlot(pred_y, residuals)
-    pu.makeFeatureResidualPlots(X, residuals)
+    pu.makeFeatureResidualPlots(X, residuals, input_features)
     
 
     
     
-def doPolynomialRegression(X, y, inputDegree):
+def doPolynomialRegression(X, y, input_features):
     
     #poly with degree 2
-    poly = preprocessing.PolynomialFeatures(degree=inputDegree)
+    poly = preprocessing.PolynomialFeatures(degree=2, interaction_only=False)
 
     kf = KFold(n_splits=5, shuffle=True, random_state = 71)
     cv_lm_poly_r2s = []
@@ -77,7 +77,7 @@ def doPolynomialRegression(X, y, inputDegree):
     residuals = pred_y - y
     
     pu.makeMainResidualPlot(pred_y, residuals)
-    pu.makeFeatureResidualPlots(X_poly, residuals)
+#     pu.makeFeatureResidualPlots(X_poly, residuals, poly.get_feature_names(input_features))
     
     
     

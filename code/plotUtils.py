@@ -19,13 +19,13 @@ def makeMainResidualPlot(prediction, y_residuals):
     stats.probplot(y_residuals, dist="norm", plot=plt)
     plt.title("Normal Q-Q plot")
     
-def makeFeatureResidualPlots(X, y_residuals):
+def makeFeatureResidualPlots(X, y_residuals, input_features):
 #     plt.figure()
     
     for col in range(X.shape[1]):
         plt.figure()
-        plt.scatter(X[:,col], y_residuals)
+        plt.scatter(X[:,col], y_residuals, alpha=0.2)
         plt.title("Residual feature plot")
-        plt.xlabel(f'feature {col}')
+        plt.xlabel(input_features[col])
         plt.ylabel("residuals")
     
