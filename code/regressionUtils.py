@@ -4,14 +4,26 @@ import numpy as np
 
 from sklearn.model_selection import train_test_split, KFold
 from sklearn.linear_model import LinearRegression, Lasso, LassoCV, Ridge, RidgeCV, PoissonRegressor
-from sklearn.metrics import r2_score
+import sklearn.metrics as metrics
 from sklearn.pipeline import Pipeline
 import sklearn.preprocessing as preprocessing 
 
 import plotUtils as pu
 
 
-def doSimpleLinearRegression(X, y, input_features):
+def printMetricResults(y_true, y_pred, boxcox_transformer):
+    # Regression metrics
+    r2=metrics.r2_score(y_true, y_pred)
+    mean_absolute_error=metrics.mean_absolute_error(y_true, y_pred) 
+    mse=metrics.mean_squared_error(y_true, y_pred) 
+
+    print('r2: ', round(r2,4))
+    print('MAE: ', round(mean_absolute_error,4), " - ", round(boxcox_transformer.inverse_transform(mean_absolute_error.reshape(1, -1))[0][0],1))
+    print('MSE: ', round(mse,4), " - ", round(boxcox_transformer.inverse_transform(mse.reshape(1, -1))[0][0],1))
+    print('RMSE: ', round(np.sqrt(mse),4), " - ", round(boxcox_transformer.inverse_transform(np.sqrt(mse).reshape(1, -1))[0][0],1))
+
+
+def doSimpleLinearRegression(X, y):
     
     # first do cross validation to make sure the model is consistent
     
@@ -32,20 +44,15 @@ def doSimpleLinearRegression(X, y, input_features):
     print('Simple regression scores: ', cv_lm_r2s, '\n')
     print(f'Simple mean cv r^2: {np.mean(cv_lm_r2s):.3f} +- {np.std(cv_lm_r2s):.3f}', '\n')
     
-    # construct residuals plots from full fit in order to verify things look okay
+    # fit model to all data and return it
     
     lm = LinearRegression()
     lm.fit(X,y)
-    pred_y = lm.predict(X)
-    residuals = pred_y - y
-    
-    print('Simple regression coef: ', lm.coef_, '\n')
-    
-    pu.makeMainResidualPlot(pred_y, residuals)
-#     pu.makeFeatureResidualPlots(X, residuals, input_features)
+
+    return lm
     
 
-def doPolynomialRegression(X, y, input_features):
+def doPolynomialRegression(X, y):
     
     #poly with degree 2
     poly = preprocessing.PolynomialFeatures(degree=2, interaction_only=False)
@@ -69,18 +76,13 @@ def doPolynomialRegression(X, y, input_features):
     print('Poly scores: ', cv_lm_poly_r2s, '\n')
     print(f'Poly mean cv r^2: {np.mean(cv_lm_poly_r2s):.3f} +- {np.std(cv_lm_poly_r2s):.3f}', '\n')
     
+    # fit model to all data and return it along with feature transformers
     
     X_poly = poly.fit_transform(X)
     lm_poly = LinearRegression()
     lm_poly.fit(X_poly,y)
-    pred_y = lm_poly.predict(X_poly)
-    residuals = pred_y - y
     
-    print('Poly coef: ', lm_poly.coef_, '\n')
-    
-    pu.makeMainResidualPlot(pred_y, residuals)
-#     pu.makeFeatureResidualPlots(X_poly, residuals, poly.get_feature_names(input_features))
-    
+    return lm_poly, poly
     
     
 def doLassoCV(X, y, poly=False):
@@ -94,13 +96,14 @@ def doLassoCV(X, y, poly=False):
 
     X_train_std = std.fit_transform(X)
     
-#     alphavec = 10**np.linspace(-3,3,200)
-#     lasso_model = LassoCV(alphas = alphavec, cv=5)
+#     alphavec = 10**np.linspace(-4,2,100)
+#     lasso_model = LassoCV(alphas = alphavec, cv=5, max_iter=5000, tol=1e-3)
     
     lasso_model = LassoCV(cv=5, max_iter=10000, tol=1e-3)
     lasso_model.fit(X_train_std, y)
     
     r2score = round(lasso_model.score(X_train_std, y), 3)
+    
     
     if(poly):
         print('LassoCV poly regression score: ', r2score, '\n')
@@ -111,6 +114,17 @@ def doLassoCV(X, y, poly=False):
         print('LassoCV simple alpha: ', lasso_model.alpha_, '\n')
         print('LassoCV simple coef: ', lasso_model.coef_, '\n')
     
+    
+    pred_y = lasso_model.predict(X_train_std)
+    residuals = pred_y - y
+    
+#     if(poly): print('LassoCV simple metrics: \n')
+#     else: print('LassoCV poly metrics: \n')
+#     printMetricResults(y, pred_y)
+    
+    pu.makeMainResidualPlot(pred_y, residuals)
+    
+    return pred_y
     
 def doRidgeCV(X, y, poly=False):
     
@@ -140,31 +154,13 @@ def doRidgeCV(X, y, poly=False):
         print('RidgeCV simple alpha: ', ridge_model.alpha_, '\n')
         print('RidgeCV simple coef: ', ridge_model.coef_, '\n')    
     
+    pred_y = ridge_model.predict(X_train_std)
+    residuals = pred_y - y    
     
+#     if(poly): print('RidgeCV simple metrics: \n')
+#     else: print('RidgeCV poly metrics: \n')
+#     printMetricResults(y, pred_y)    
     
+    pu.makeMainResidualPlot(pred_y, residuals)    
     
-
-# def doLassoRegression(X, y, inputAlpha):
-    
-#     kf = KFold(n_splits=5, shuffle=True, random_state = 42387)
-#     r2s = [] #collect the validation results
-
-#     for train_ind, val_ind in kf.split(X,y):
-
-#         X_train, y_train = X[train_ind], y[train_ind]
-#         X_val, y_val = X[val_ind], y[val_ind] 
-
-#         # standard scale the features
-#         std = preprocessing.StandardScaler()
-
-#         X_train_std = std.fit_transform(X_train)
-#         X_val_std = std.transform(X_val)
-
-#         lasso_model = Lasso(alpha = inputAlpha)
-#         lasso_model.fit(X_train_std,y_train)
-
-#         r2s.append(round(lasso_model.score(X_val_std, y_val), 3))
-
-#     print('Lasso regression scores: ', r2s, '\n')
-#     print(f'Lasso mean cv r^2: {np.mean(r2s):.3f} +- {np.std(r2s):.3f}')
-#     print(list(zip(X_train.columns, lasso_model.coef_)))
+    return pred_y
