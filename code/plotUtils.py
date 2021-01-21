@@ -5,7 +5,7 @@ import seaborn as sns
 import scipy.stats as stats
 
 
-def makeMainResidualPlot(prediction, y_residuals):
+def makeMainResidualPlot(prediction, y_residuals, saveplot=False):
     plt.figure(figsize=(10,5))
     
     plt.subplot(1, 2, 1)
@@ -18,6 +18,9 @@ def makeMainResidualPlot(prediction, y_residuals):
     plt.subplot(1, 2, 2)
     stats.probplot(y_residuals, dist="norm", plot=plt)
     plt.title("Normal Q-Q plot")
+    
+    if(saveplot):
+        plt.savefig("Images/FinalResidualsPlot.png")
     
 def makeFeatureResidualPlots(X, y_residuals, input_features):
 #     plt.figure()
