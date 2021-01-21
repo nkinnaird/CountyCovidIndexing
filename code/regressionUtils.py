@@ -8,8 +8,6 @@ import sklearn.metrics as metrics
 from sklearn.pipeline import Pipeline
 import sklearn.preprocessing as preprocessing 
 
-import plotUtils as pu
-
 
 def printMetricResults(y_true, y_pred, boxcox_transformer):
     # Regression metrics
@@ -90,10 +88,10 @@ def doLassoCV(X, y, poly=False):
     std = preprocessing.StandardScaler()
     
     # if true, then make polynomial features and then do LassoCV
-    if(poly):
+    if(poly): 
         poly = preprocessing.PolynomialFeatures(degree=2, interaction_only=False)
         X = poly.fit_transform(X)
-
+    
     X_train_std = std.fit_transform(X)
     
 #     alphavec = 10**np.linspace(-4,2,100)
@@ -102,29 +100,11 @@ def doLassoCV(X, y, poly=False):
     lasso_model = LassoCV(cv=5, max_iter=10000, tol=1e-3)
     lasso_model.fit(X_train_std, y)
     
-    r2score = round(lasso_model.score(X_train_std, y), 3)
-    
-    
     if(poly):
-        print('LassoCV poly regression score: ', r2score, '\n')
-        print('LassoCV poly alpha: ', lasso_model.alpha_, '\n')
-        print('LassoCV poly coef: ', lasso_model.coef_, '\n')
+        return lasso_model, std, poly
     else:
-        print('LassoCV simple regression score: ', r2score, '\n')
-        print('LassoCV simple alpha: ', lasso_model.alpha_, '\n')
-        print('LassoCV simple coef: ', lasso_model.coef_, '\n')
+        return lasso_model, std
     
-    
-    pred_y = lasso_model.predict(X_train_std)
-    residuals = pred_y - y
-    
-#     if(poly): print('LassoCV simple metrics: \n')
-#     else: print('LassoCV poly metrics: \n')
-#     printMetricResults(y, pred_y)
-    
-    pu.makeMainResidualPlot(pred_y, residuals)
-    
-    return pred_y
     
 def doRidgeCV(X, y, poly=False):
     
@@ -143,24 +123,9 @@ def doRidgeCV(X, y, poly=False):
 #     ridge_model = RidgeCV(cv=5)
     ridge_model.fit(X_train_std, y)
     
-    r2score = round(ridge_model.score(X_train_std, y), 3)
     
     if(poly):
-        print('RidgeCV poly regression score: ', r2score, '\n')
-        print('RidgeCV poly alpha: ', ridge_model.alpha_, '\n')
-        print('RidgeCV poly coef: ', ridge_model.coef_, '\n')
+        return ridge_model, std, poly
     else:
-        print('RidgeCV simple regression score: ', r2score, '\n')
-        print('RidgeCV simple alpha: ', ridge_model.alpha_, '\n')
-        print('RidgeCV simple coef: ', ridge_model.coef_, '\n')    
+        return ridge_model, std
     
-    pred_y = ridge_model.predict(X_train_std)
-    residuals = pred_y - y    
-    
-#     if(poly): print('RidgeCV simple metrics: \n')
-#     else: print('RidgeCV poly metrics: \n')
-#     printMetricResults(y, pred_y)    
-    
-    pu.makeMainResidualPlot(pred_y, residuals)    
-    
-    return pred_y
