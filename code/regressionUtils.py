@@ -1,3 +1,5 @@
+# methods for doing various regression fits with cross validation
+
 import math
 import pandas as pd
 import numpy as np

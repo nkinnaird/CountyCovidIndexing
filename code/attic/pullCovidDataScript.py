@@ -1,3 +1,8 @@
+# this script uses Selenium and BeautifulSoup to webscrape data directly from the CDC website https://covid.cdc.gov/covid-data-tracker/#county-view
+
+# it's pretty slow, but has been automated such that it makes pkls on a per state basis
+# multiple instances of this script can be ran simultaneously in order to speed up the data collection process, without any file writing issues
+
 from bs4 import BeautifulSoup
 import requests
 import time, os
